@@ -1,0 +1,15 @@
+{
+	"name": "adf-ayazzouitine-lab",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "cc537fb2-91d1-487d-9599-53dbbce54f4f",
+		"tenantId": "503bb24f-b93f-45d6-8359-700a80b5cd0c"
+	}
+}
