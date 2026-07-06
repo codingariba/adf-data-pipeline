@@ -11,9 +11,25 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adls_data_lake'"
 		},
+		"ls_azuresql_datalab_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azuresql_datalab'"
+		},
 		"ls_adls_data_lake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adlsdatalabaya2005.dfs.core.windows.net/"
+		},
+		"ls_azuresql_datalab_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "srv-datalab-aya2005.database.windows.net"
+		},
+		"ls_azuresql_datalab_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db-datalab"
+		},
+		"ls_azuresql_datalab_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "adminaya"
 		}
 	},
 	"variables": {
@@ -32,6 +48,28 @@
 					"accountKey": {
 						"type": "SecureString",
 						"value": "[parameters('ls_adls_data_lake_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_azuresql_datalab')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ls_azuresql_datalab_properties_typeProperties_server')]",
+					"database": "[parameters('ls_azuresql_datalab_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ls_azuresql_datalab_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_azuresql_datalab_password')]"
 					}
 				}
 			},

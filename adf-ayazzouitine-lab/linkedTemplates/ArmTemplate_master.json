@@ -11,9 +11,25 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adls_data_lake'"
 		},
+		"ls_azuresql_datalab_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azuresql_datalab'"
+		},
 		"ls_adls_data_lake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adlsdatalabaya2005.dfs.core.windows.net/"
+		},
+		"ls_azuresql_datalab_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "srv-datalab-aya2005.database.windows.net"
+		},
+		"ls_azuresql_datalab_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db-datalab"
+		},
+		"ls_azuresql_datalab_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "adminaya"
 		},
 		"containerUri": {
 			"type": "string",
@@ -45,8 +61,20 @@
 					"ls_adls_data_lake_accountKey": {
 						"value": "[parameters('ls_adls_data_lake_accountKey')]"
 					},
+					"ls_azuresql_datalab_password": {
+						"value": "[parameters('ls_azuresql_datalab_password')]"
+					},
 					"ls_adls_data_lake_properties_typeProperties_url": {
 						"value": "[parameters('ls_adls_data_lake_properties_typeProperties_url')]"
+					},
+					"ls_azuresql_datalab_properties_typeProperties_server": {
+						"value": "[parameters('ls_azuresql_datalab_properties_typeProperties_server')]"
+					},
+					"ls_azuresql_datalab_properties_typeProperties_database": {
+						"value": "[parameters('ls_azuresql_datalab_properties_typeProperties_database')]"
+					},
+					"ls_azuresql_datalab_properties_typeProperties_userName": {
+						"value": "[parameters('ls_azuresql_datalab_properties_typeProperties_userName')]"
 					}
 				}
 			},
