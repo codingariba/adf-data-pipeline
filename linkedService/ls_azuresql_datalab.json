@@ -1,0 +1,17 @@
+{
+	"name": "ls_azuresql_datalab",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "srv-datalab-aya2005.database.windows.net",
+			"database": "db-datalab",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "adminaya",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDIzQjE2QkRELTBGQTUtNEJBMy04M0I4LTE3NzRDQ0EzODFBOF82YTQyNGFjOS05ZDY1LTRjODQtYjY5Ny01YzA2OTdkMjQ3Y2YiDQp9"
+		}
+	}
+}
