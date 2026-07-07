@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'ls_azuresql_datalab'"
 		},
+		"ls_postgres_onprem_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_postgres_onprem'"
+		},
 		"ls_adls_data_lake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adlsdatalabaya2005.dfs.core.windows.net/"
@@ -30,6 +34,18 @@
 		"ls_azuresql_datalab_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "adminaya"
+		},
+		"ls_postgres_onprem_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost"
+		},
+		"ls_postgres_onprem_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "datalab"
+		},
+		"ls_postgres_onprem_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "postgres"
 		}
 	},
 	"variables": {
@@ -147,6 +163,142 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_adls_bronze')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adls_data_lake",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat(dataset().TableName, '.parquet')",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat(dataset().TableName, '/', utcnow('yyyy/MM/dd'))",
+							"type": "Expression"
+						},
+						"fileSystem": "bronze"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls_data_lake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_postgres_source')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_postgres_onprem",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "PostgreSqlV2Table",
+				"schema": [],
+				"typeProperties": {
+					"schema": "public",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_postgres_onprem')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sql_source')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_datalab",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "vente_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "magasin_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "produit_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "quantite",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "montant_total",
+						"type": "decimal",
+						"precision": 10,
+						"scale": 2
+					},
+					{
+						"name": "date_vente",
+						"type": "datetime2",
+						"scale": 7
+					},
+					{
+						"name": "mode_paiement",
+						"type": "nvarchar"
+					},
+					{
+						"name": "LastModifiedDate",
+						"type": "datetime2",
+						"scale": 7
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ls_adls_data_lake')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -182,6 +334,44 @@
 						"value": "[parameters('ls_azuresql_datalab_password')]"
 					}
 				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_postgres_onprem')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "PostgreSqlV2",
+				"typeProperties": {
+					"server": "[parameters('ls_postgres_onprem_properties_typeProperties_server')]",
+					"port": 5432,
+					"database": "[parameters('ls_postgres_onprem_properties_typeProperties_database')]",
+					"username": "[parameters('ls_postgres_onprem_properties_typeProperties_username')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_postgres_onprem_password')]"
+					},
+					"sslMode": 2,
+					"authenticationType": "Basic"
+				},
+				"connectVia": {
+					"referenceName": "shir-datalab-local",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/shir-datalab-local')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/shir-datalab-local')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		}
