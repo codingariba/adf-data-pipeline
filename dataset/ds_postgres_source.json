@@ -1,0 +1,21 @@
+{
+	"name": "ds_postgres_source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_postgres_onprem",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"TableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "PostgreSqlV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "public",
+			"table": "@dataset().TableName"
+		}
+	}
+}
