@@ -1,0 +1,6 @@
+{
+	"name": "shir-datalab-local",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
