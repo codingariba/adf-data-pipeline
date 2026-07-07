@@ -1,0 +1,62 @@
+{
+	"name": "ds_sql_source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuresql_datalab",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"TableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "vente_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "magasin_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "produit_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "quantite",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "montant_total",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "date_vente",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "mode_paiement",
+				"type": "nvarchar"
+			},
+			{
+				"name": "LastModifiedDate",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "@dataset().TableName"
+		}
+	}
+}
