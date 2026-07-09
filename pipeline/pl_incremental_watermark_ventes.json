@@ -38,6 +38,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "UpdateWatermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -91,6 +97,34 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "UpdateWatermark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "PostgreSqlV2Source",
+						"query": "@concat('\nUPDATE watermark_control \nSET last_loaded_value = (SELECT MAX(lastmodifieddate) FROM ', pipeline().parameters.p_table_name, '), \n    last_run_datetime = now() AT TIME ZONE ''UTC'' \nWHERE table_name = ''', pipeline().parameters.p_table_name, ''' ;\nSELECT ''SUCCESS'' AS RESULT ;\n')",
+						"queryTimeout": "02:00:00"
+					},
+					"dataset": {
+						"referenceName": "ds_postgres_source",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "@pipeline().parameters.p_table_name"
+						}
+					},
+					"firstRowOnly": false
+				}
 			}
 		],
 		"parameters": {
