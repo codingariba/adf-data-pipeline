@@ -17,7 +17,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
+						"query": {
+							"value": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00"
 					},
 					"dataset": {
@@ -57,40 +60,17 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": "@concat('SELECT * FROM ', pipeline().parameters.p_table_name, ' WHERE lastmodifieddate > ''', activity('Lookup_GetWatermark').output.firstRow.last_loaded_value, '''')",
+						"query": {
+							"value": "@concat('SELECT * FROM ', pipeline().parameters.p_table_name, ' WHERE lastmodifieddate > ''', activity('Lookup_GetWatermark').output.firstRow.last_loaded_value, '''')",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00"
 					},
-					"sink": {
-						"type": "ParquetSink",
-						"storeSettings": {
-							"type": "AzureBlobFSWriteSettings"
-						},
-						"formatSettings": {
-							"type": "ParquetWriteSettings"
-						}
-					},
-					"enableStaging": false,
-					"translator": {
-						"type": "TabularTranslator",
-						"typeConversion": true,
-						"typeConversionSettings": {
-							"allowDataTruncation": true,
-							"treatBooleanAsNumber": false
-						}
-					}
+					"enableStaging": false
 				},
 				"inputs": [
 					{
 						"referenceName": "ds_postgres_source",
-						"type": "DatasetReference",
-						"parameters": {
-							"TableName": "@pipeline().parameters.p_table_name"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_adls_bronze",
 						"type": "DatasetReference",
 						"parameters": {
 							"TableName": "@pipeline().parameters.p_table_name"
@@ -113,7 +93,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": "@concat('\nUPDATE watermark_control \nSET last_loaded_value = (SELECT MAX(lastmodifieddate) FROM ', pipeline().parameters.p_table_name, '), \n    last_run_datetime = now() AT TIME ZONE ''UTC'' \nWHERE table_name = ''', pipeline().parameters.p_table_name, ''' ;\nSELECT ''SUCCESS'' AS RESULT ;\n')",
+						"query": {
+							"value": "@concat('\nUPDATE watermark_control \nSET last_loaded_value = (SELECT MAX(lastmodifieddate) FROM ', pipeline().parameters.p_table_name, '), \n    last_run_datetime = now() AT TIME ZONE ''UTC'' \nWHERE table_name = ''', pipeline().parameters.p_table_name, ''' ;\nSELECT ''SUCCESS'' AS RESULT ;\n')",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00"
 					},
 					"dataset": {
