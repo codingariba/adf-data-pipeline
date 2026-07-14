@@ -33,7 +33,7 @@
 				}
 			},
 			{
-				"name": "Copy_ToBronze",
+				"name": "Copy_ToRaw",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -66,11 +66,37 @@
 						},
 						"queryTimeout": "02:00:00"
 					},
-					"enableStaging": false
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
 				},
 				"inputs": [
 					{
 						"referenceName": "ds_postgres_source",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "@pipeline().parameters.p_table_name"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_adls_raw",
 						"type": "DatasetReference",
 						"parameters": {
 							"TableName": "@pipeline().parameters.p_table_name"
