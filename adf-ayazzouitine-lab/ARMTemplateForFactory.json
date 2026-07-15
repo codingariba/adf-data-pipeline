@@ -148,34 +148,24 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "PostgreSqlV2Source",
-								"query": {
-									"value": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00"
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
 							},
 							"dataset": {
-								"referenceName": "ds_postgres_source",
+								"referenceName": "ds_sql_watermark",
 								"type": "DatasetReference",
-								"parameters": {
-									"TableName": "@pipeline().parameters.p_table_name"
-								}
+								"parameters": {}
 							}
 						}
 					},
 					{
-						"name": "Copy_ToBronze",
+						"name": "Copy_ToRaw",
 						"type": "Copy",
 						"dependsOn": [
 							{
 								"activity": "Lookup_GetWatermark",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "UpdateWatermark",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -228,7 +218,7 @@
 						],
 						"outputs": [
 							{
-								"referenceName": "ds_adls_bronze",
+								"referenceName": "ds_adls_raw",
 								"type": "DatasetReference",
 								"parameters": {
 									"TableName": "@pipeline().parameters.p_table_name"
@@ -237,9 +227,16 @@
 						]
 					},
 					{
-						"name": "UpdateWatermark",
+						"name": "Lookup_GetMaxDate",
 						"type": "Lookup",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Copy_ToRaw",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -251,10 +248,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "PostgreSqlV2Source",
-								"query": {
-									"value": "@concat('\nUPDATE watermark_control \nSET last_loaded_value = (SELECT MAX(lastmodifieddate) FROM ', pipeline().parameters.p_table_name, '), \n    last_run_datetime = now() AT TIME ZONE ''UTC'' \nWHERE table_name = ''', pipeline().parameters.p_table_name, ''' ;\nSELECT ''SUCCESS'' AS RESULT ;\n')",
-									"type": "Expression"
-								},
+								"query": "@concat('SELECT MAX(lastmodifieddate) AS max_date FROM ', pipeline().parameters.p_table_name)",
 								"queryTimeout": "02:00:00"
 							},
 							"dataset": {
@@ -263,8 +257,40 @@
 								"parameters": {
 									"TableName": "@pipeline().parameters.p_table_name"
 								}
-							},
-							"firstRowOnly": false
+							}
+						}
+					},
+					{
+						"name": "UpdateWatermark",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "Lookup_GetMaxDate",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "ls_azuresql_datalab",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "@concat('UPDATE watermark_control SET last_loaded_value = ''', activity('Lookup_GetMaxDate').output.firstRow.max_date, ''', last_run_datetime = SYSUTCDATETIME() WHERE table_name = ''', pipeline().parameters.p_table_name, '''')"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
 						}
 					}
 				],
@@ -280,8 +306,10 @@
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_sql_watermark')]",
 				"[concat(variables('factoryId'), '/datasets/ds_postgres_source')]",
-				"[concat(variables('factoryId'), '/datasets/ds_adls_bronze')]"
+				"[concat(variables('factoryId'), '/datasets/ds_adls_raw')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]"
 			]
 		},
 		{
@@ -319,7 +347,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_adls_bronze')]",
+			"name": "[concat(parameters('factoryName'), '/ds_adls_raw')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -345,7 +373,7 @@
 							"value": "@concat(dataset().TableName, '/', utcnow('yyyy/MM/dd'))",
 							"type": "Expression"
 						},
-						"fileSystem": "bronze"
+						"fileSystem": "raw"
 					},
 					"compressionCodec": "snappy"
 				},
@@ -385,18 +413,13 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sql_source')]",
+			"name": "[concat(parameters('factoryName'), '/ds_sql_watermark')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
 					"referenceName": "ls_azuresql_datalab",
 					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"TableName": {
-						"type": "string"
-					}
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
@@ -444,10 +467,7 @@
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": {
-						"value": "@dataset().TableName",
-						"type": "Expression"
-					}
+					"table": "watermark_control"
 				}
 			},
 			"dependsOn": [
