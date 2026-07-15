@@ -17,7 +17,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
+						"sqlReaderQuery": {
+							"value": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -94,45 +97,11 @@
 				]
 			},
 			{
-				"name": "Lookup_GetMaxDate",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Copy_ToRaw",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "PostgreSqlV2Source",
-						"query": "@concat('SELECT MAX(lastmodifieddate) AS max_date FROM ', pipeline().parameters.p_table_name)",
-						"queryTimeout": "02:00:00"
-					},
-					"dataset": {
-						"referenceName": "ds_postgres_source",
-						"type": "DatasetReference",
-						"parameters": {
-							"TableName": "@pipeline().parameters.p_table_name"
-						}
-					}
-				}
-			},
-			{
 				"name": "UpdateWatermark",
 				"type": "Script",
 				"dependsOn": [
 					{
-						"activity": "Lookup_GetMaxDate",
+						"activity": "Copy_ToRaw",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -154,7 +123,7 @@
 					"scripts": [
 						{
 							"type": "Query",
-							"text": "@concat('UPDATE watermark_control SET last_loaded_value = ''', activity('Lookup_GetMaxDate').output.firstRow.max_date, ''', last_run_datetime = SYSUTCDATETIME() WHERE table_name = ''', pipeline().parameters.p_table_name, '''')"
+							"text": "@concat('\nUPDATE watermark_control \nSET last_loaded_value = SYSUTCDATETIME(), \n    last_run_datetime = SYSUTCDATETIME() \nWHERE table_name = ''', pipeline().parameters.p_table_name, '''\n')"
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
