@@ -1,5 +1,5 @@
 {
-	"name": "ds_sql_source",
+	"name": "ds_sql_watermark",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_azuresql_datalab",
@@ -56,7 +56,7 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "@dataset().TableName"
+			"table": "watermark_control"
 		}
 	}
 }
