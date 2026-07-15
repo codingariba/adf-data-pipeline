@@ -16,19 +16,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"source": {
-						"type": "PostgreSqlV2Source",
-						"query": {
-							"value": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00"
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "@concat('SELECT last_loaded_value FROM watermark_control WHERE table_name = ''', pipeline().parameters.p_table_name, '''')",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
 					},
 					"dataset": {
-						"referenceName": "ds_postgres_source",
-						"type": "DatasetReference",
-						"parameters": {
-							"TableName": "@pipeline().parameters.p_table_name"
-						}
+						"referenceName": "ds_sql_watermark",
+						"type": "DatasetReference"
 					}
 				}
 			},
