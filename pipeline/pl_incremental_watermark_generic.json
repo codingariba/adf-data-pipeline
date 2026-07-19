@@ -1,5 +1,5 @@
 {
-	"name": "pl_incremental_watermark_ventes",
+	"name": "pl_incremental_watermark_generic",
 	"properties": {
 		"activities": [
 			{
@@ -123,7 +123,10 @@
 					"scripts": [
 						{
 							"type": "Query",
-							"text": "@concat('\nUPDATE watermark_control \nSET last_loaded_value = SYSUTCDATETIME(), \n    last_run_datetime = SYSUTCDATETIME() \nWHERE table_name = ''', pipeline().parameters.p_table_name, '''\n')"
+							"text": {
+								"value": "@concat('\nUPDATE watermark_control \nSET last_loaded_value = SYSUTCDATETIME(), \n    last_run_datetime = SYSUTCDATETIME() \nWHERE table_name = ''', pipeline().parameters.p_table_name, '''\n')",
+								"type": "Expression"
+							}
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
