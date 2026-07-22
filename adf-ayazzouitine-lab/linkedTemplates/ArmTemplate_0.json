@@ -460,7 +460,7 @@
 								"referenceName": "ds_adls_raw",
 								"type": "DatasetReference",
 								"parameters": {
-									"TableName": "@pipeline().parameters.p_table_name"
+									"TableName": "cdc_ventes"
 								}
 							}
 						]
