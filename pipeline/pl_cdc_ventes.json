@@ -49,10 +49,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": {
-							"value": "@concat('SELECT * FROM cdc_ventes WHERE cdc_id > ', activity('Lookup_GetCdcCursor').output.firstRow.last_cdc_id_loaded)",
-							"type": "Expression"
-						},
+						"query": "@concat('SELECT * FROM cdc_ventes WHERE cdc_id > ', activity('Lookup_GetCdcCursor').output.firstRow.last_cdc_id_loaded)",
 						"queryTimeout": "02:00:00"
 					},
 					"sink": {
