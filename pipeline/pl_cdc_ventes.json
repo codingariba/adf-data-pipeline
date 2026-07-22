@@ -49,7 +49,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": "@concat('SELECT * FROM cdc_ventes WHERE cdc_id > ', activity('Lookup_GetCdcCursor').output.firstRow.last_cdc_id_loaded)",
+						"query": {
+							"value": "@concat('SELECT * FROM cdc_ventes WHERE cdc_id > ', activity('Lookup_GetCdcCursor').output.firstRow.last_cdc_id_loaded)",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00"
 					},
 					"sink": {
@@ -85,7 +88,7 @@
 						"referenceName": "ds_adls_raw",
 						"type": "DatasetReference",
 						"parameters": {
-							"TableName": "@pipeline().parameters.p_table_name"
+							"TableName": "cdc_ventes"
 						}
 					}
 				]
@@ -117,7 +120,10 @@
 					"scripts": [
 						{
 							"type": "Query",
-							"text": "@concat('UPDATE cdc_control SET last_cdc_id_loaded = ', \nstring(add(int(activity('Lookup_GetCdcCursor').output.firstRow.last_cdc_id_loaded), activity('Copy_CdcToRaw').output.rowsCopied)), \n', last_run_datetime = SYSUTCDATETIME() WHERE table_name = ''ventes''')"
+							"text": {
+								"value": "@concat('UPDATE cdc_control SET last_cdc_id_loaded = ', \nstring(add(int(activity('Lookup_GetCdcCursor').output.firstRow.last_cdc_id_loaded), activity('Copy_CdcToRaw').output.rowsCopied)), \n', last_run_datetime = SYSUTCDATETIME() WHERE table_name = ''ventes''')",
+								"type": "Expression"
+							}
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
