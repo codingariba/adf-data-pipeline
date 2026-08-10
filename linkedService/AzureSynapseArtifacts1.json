@@ -1,0 +1,12 @@
+{
+	"name": "AzureSynapseArtifacts1",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSynapseArtifacts",
+		"typeProperties": {
+			"endpoint": "https://synapseworkspace200.dev.azuresynapse.net",
+			"authentication": "MSI",
+			"workspaceResourceId": "/subscriptions/6a087cf8-c0b2-46e0-823d-20ee091c9d65/resourceGroups/rg-data-lab/providers/Microsoft.Synapse/workspaces/synapseworkspace200"
+		}
+	}
+}
