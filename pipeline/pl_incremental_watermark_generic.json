@@ -220,12 +220,6 @@
 									},
 									"type": "NotebookReference"
 								},
-								"parameters": {
-									"table_name": {
-										"value": "@item()",
-										"type": "string"
-									}
-								},
 								"snapshot": true,
 								"sparkPool": {
 									"referenceName": {
