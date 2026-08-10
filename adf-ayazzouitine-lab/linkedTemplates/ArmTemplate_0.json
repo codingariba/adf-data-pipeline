@@ -762,6 +762,79 @@
 							"referenceName": "AzureSynapseArtifacts1",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "ForEach_Silver",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "notebook_bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@createArray('ventes', 'magasins', 'produits')",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "notebook_silver",
+									"type": "SynapseNotebook",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebook": {
+											"referenceName": {
+												"value": "nb_silver_generic",
+												"type": "Expression"
+											},
+											"type": "NotebookReference"
+										},
+										"parameters": {
+											"table_name": {
+												"value": {
+													"value": "@item()",
+													"type": "Expression"
+												},
+												"type": "string"
+											}
+										},
+										"snapshot": true,
+										"sparkPool": {
+											"referenceName": {
+												"value": "sparkdatalab",
+												"type": "Expression"
+											},
+											"type": "BigDataPoolReference"
+										},
+										"executorSize": "Small",
+										"conf": {
+											"spark.dynamicAllocation.enabled": true,
+											"spark.dynamicAllocation.minExecutors": 1,
+											"spark.dynamicAllocation.maxExecutors": 2
+										},
+										"driverSize": "Small",
+										"numExecutors": 1
+									},
+									"linkedServiceName": {
+										"referenceName": "AzureSynapseArtifacts1",
+										"type": "LinkedServiceReference"
+									}
+								}
+							]
+						}
 					}
 				],
 				"policy": {
