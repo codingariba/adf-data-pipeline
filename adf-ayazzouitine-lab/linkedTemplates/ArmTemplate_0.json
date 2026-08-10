@@ -802,15 +802,6 @@
 											},
 											"type": "NotebookReference"
 										},
-										"parameters": {
-											"table_name": {
-												"value": {
-													"value": "@item()",
-													"type": "Expression"
-												},
-												"type": "string"
-											}
-										},
 										"snapshot": true,
 										"sparkPool": {
 											"referenceName": {
