@@ -105,12 +105,6 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
-					},
-					{
-						"activity": "notebook_bronze",
-						"dependencyConditions": [
-							"Succeeded"
-						]
 					}
 				],
 				"policy": {
@@ -141,7 +135,14 @@
 			{
 				"name": "notebook_bronze",
 				"type": "SynapseNotebook",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "UpdateWatermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -157,12 +158,6 @@
 							"type": "Expression"
 						},
 						"type": "NotebookReference"
-					},
-					"parameters": {
-						"table_name": {
-							"value": "@activity('Lookup_GetWatermark').output.firstRow.TableName",
-							"type": "string"
-						}
 					},
 					"snapshot": true,
 					"sparkPool": {
