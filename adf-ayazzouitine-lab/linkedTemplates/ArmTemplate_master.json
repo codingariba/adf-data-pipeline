@@ -19,6 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'ls_postgres_onprem'"
 		},
+		"ls_synapse_workspace_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_synapse_workspace'"
+		},
+		"AzureSynapseArtifacts1_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://synapseworkspace200.dev.azuresynapse.net"
+		},
 		"ls_adls_data_lake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adlsdatalabaya2005.dfs.core.windows.net/"
@@ -46,6 +54,18 @@
 		"ls_postgres_onprem_properties_typeProperties_username": {
 			"type": "string",
 			"defaultValue": "postgres"
+		},
+		"ls_synapse_workspace_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "synapseworkspace200-ondemand.sql.azuresynapse.net"
+		},
+		"ls_synapse_workspace_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "master"
+		},
+		"ls_synapse_workspace_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "adminaya"
 		},
 		"containerUri": {
 			"type": "string",
@@ -80,8 +100,14 @@
 					"ls_azuresql_datalab_password": {
 						"value": "[parameters('ls_azuresql_datalab_password')]"
 					},
+					"ls_synapse_workspace_password": {
+						"value": "[parameters('ls_synapse_workspace_password')]"
+					},
 					"ls_postgres_onprem_password": {
 						"value": "[parameters('ls_postgres_onprem_password')]"
+					},
+					"AzureSynapseArtifacts1_properties_typeProperties_endpoint": {
+						"value": "[parameters('AzureSynapseArtifacts1_properties_typeProperties_endpoint')]"
 					},
 					"ls_adls_data_lake_properties_typeProperties_url": {
 						"value": "[parameters('ls_adls_data_lake_properties_typeProperties_url')]"
@@ -94,6 +120,15 @@
 					},
 					"ls_azuresql_datalab_properties_typeProperties_userName": {
 						"value": "[parameters('ls_azuresql_datalab_properties_typeProperties_userName')]"
+					},
+					"ls_synapse_workspace_properties_typeProperties_server": {
+						"value": "[parameters('ls_synapse_workspace_properties_typeProperties_server')]"
+					},
+					"ls_synapse_workspace_properties_typeProperties_database": {
+						"value": "[parameters('ls_synapse_workspace_properties_typeProperties_database')]"
+					},
+					"ls_synapse_workspace_properties_typeProperties_userName": {
+						"value": "[parameters('ls_synapse_workspace_properties_typeProperties_userName')]"
 					},
 					"ls_postgres_onprem_properties_typeProperties_server": {
 						"value": "[parameters('ls_postgres_onprem_properties_typeProperties_server')]"

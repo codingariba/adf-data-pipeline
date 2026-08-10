@@ -14,6 +14,12 @@
 		"ls_postgres_onprem_password": {
 			"value": ""
 		},
+		"ls_synapse_workspace_password": {
+			"value": ""
+		},
+		"AzureSynapseArtifacts1_properties_typeProperties_endpoint": {
+			"value": "https://synapseworkspace200.dev.azuresynapse.net"
+		},
 		"ls_adls_data_lake_properties_typeProperties_url": {
 			"value": "https://adlsdatalabaya2005.dfs.core.windows.net/"
 		},
@@ -34,6 +40,15 @@
 		},
 		"ls_postgres_onprem_properties_typeProperties_username": {
 			"value": "postgres"
+		},
+		"ls_synapse_workspace_properties_typeProperties_server": {
+			"value": "synapseworkspace200-ondemand.sql.azuresynapse.net"
+		},
+		"ls_synapse_workspace_properties_typeProperties_database": {
+			"value": "master"
+		},
+		"ls_synapse_workspace_properties_typeProperties_userName": {
+			"value": "adminaya"
 		}
 	}
 }

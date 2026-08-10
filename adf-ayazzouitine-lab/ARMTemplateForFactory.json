@@ -19,6 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'ls_postgres_onprem'"
 		},
+		"ls_synapse_workspace_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_synapse_workspace'"
+		},
+		"AzureSynapseArtifacts1_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://synapseworkspace200.dev.azuresynapse.net"
+		},
 		"ls_adls_data_lake_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adlsdatalabaya2005.dfs.core.windows.net/"
@@ -46,6 +54,18 @@
 		"ls_postgres_onprem_properties_typeProperties_username": {
 			"type": "string",
 			"defaultValue": "postgres"
+		},
+		"ls_synapse_workspace_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "synapseworkspace200-ondemand.sql.azuresynapse.net"
+		},
+		"ls_synapse_workspace_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "master"
+		},
+		"ls_synapse_workspace_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "adminaya"
 		}
 	},
 	"variables": {
@@ -391,6 +411,12 @@
 								"dependencyConditions": [
 									"Succeeded"
 								]
+							},
+							{
+								"activity": "notebook_bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
 						"policy": {
@@ -417,6 +443,54 @@
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
 						}
+					},
+					{
+						"name": "notebook_bronze",
+						"type": "SynapseNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": {
+									"value": "nb_bronze_generic",
+									"type": "Expression"
+								},
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"table_name": {
+									"value": "@activity('Lookup_GetWatermark').output.firstRow.TableName",
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": {
+									"value": "sparkdatalab",
+									"type": "Expression"
+								},
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": true,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 2
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureSynapseArtifacts1",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -434,7 +508,8 @@
 				"[concat(variables('factoryId'), '/datasets/ds_sql_watermark')]",
 				"[concat(variables('factoryId'), '/datasets/ds_postgres_source')]",
 				"[concat(variables('factoryId'), '/datasets/ds_adls_raw')]",
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]"
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSynapseArtifacts1')]"
 			]
 		},
 		{
@@ -600,6 +675,21 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureSynapseArtifacts1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSynapseArtifacts",
+				"typeProperties": {
+					"endpoint": "[parameters('AzureSynapseArtifacts1_properties_typeProperties_endpoint')]",
+					"authentication": "MSI",
+					"workspaceResourceId": "/subscriptions/6a087cf8-c0b2-46e0-823d-20ee091c9d65/resourceGroups/rg-data-lab/providers/Microsoft.Synapse/workspaces/synapseworkspace200"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ls_adls_data_lake')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -665,6 +755,28 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/shir-datalab-local')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_synapse_workspace')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"server": "[parameters('ls_synapse_workspace_properties_typeProperties_server')]",
+					"database": "[parameters('ls_synapse_workspace_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ls_synapse_workspace_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_synapse_workspace_password')]"
+					}
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/shir-datalab-local')]",
