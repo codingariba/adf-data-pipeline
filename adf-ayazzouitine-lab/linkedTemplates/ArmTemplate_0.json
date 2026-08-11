@@ -557,6 +557,55 @@
 							],
 							"scriptBlockExecutionTimeout": "02:00:00"
 						}
+					},
+					{
+						"name": "notebook_SilverCdc",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "UpdateCdcControl",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": {
+									"value": "nb_silver_generic",
+									"type": "Expression"
+								},
+								"type": "NotebookReference"
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": {
+									"value": "sparkdatalab",
+									"type": "Expression"
+								},
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": true,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 2
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureSynapseArtifacts1",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -574,7 +623,8 @@
 				"[concat(variables('factoryId'), '/datasets/ds_sql_watermark')]",
 				"[concat(variables('factoryId'), '/datasets/ds_postgres_source')]",
 				"[concat(variables('factoryId'), '/datasets/ds_adls_raw')]",
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]"
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSynapseArtifacts1')]"
 			]
 		},
 		{
