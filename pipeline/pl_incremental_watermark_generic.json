@@ -159,6 +159,11 @@
 						},
 						"type": "NotebookReference"
 					},
+					"parameters": {
+						"table": {
+							"value": ""
+						}
+					},
 					"snapshot": true,
 					"sparkPool": {
 						"referenceName": {
