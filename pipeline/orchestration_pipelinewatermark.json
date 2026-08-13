@@ -38,7 +38,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT DISTINCT table_name FROM watermark_table",
+						"sqlReaderQuery": "SELECT table_name, last_loaded_value, last_run_datetime FROM watermark_control",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
