@@ -3,18 +3,104 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Set variable1",
+				"name": "Start_Time",
 				"type": "SetVariable",
 				"dependsOn": [],
 				"policy": {
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_start_time",
+					"value": "@utcNow()"
+				}
 			},
 			{
-				"name": "Execute Pipeline1",
-				"type": "ExecutePipeline",
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Start_Time",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT DISTINCT table_name FROM watermark_table",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_sql_watermark",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "notebook_gold",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Tables_Loop",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": {
+							"value": "nb_gold_generic",
+							"type": "Expression"
+						},
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"sparkPool": {
+						"referenceName": {
+							"value": "sparkdatalab",
+							"type": "Expression"
+						},
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": "Small",
+					"conf": {
+						"spark.dynamicAllocation.enabled": true,
+						"spark.dynamicAllocation.minExecutors": 1,
+						"spark.dynamicAllocation.maxExecutors": 2
+					},
+					"driverSize": "Small",
+					"numExecutors": 1
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSynapseArtifacts1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Tables_Loop",
+				"type": "ForEach",
 				"dependsOn": [
 					{
 						"activity": "Lookup1",
@@ -23,32 +109,66 @@
 						]
 					}
 				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Execute_Pipeline",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_incremental_watermark_generic",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_table_name": "@item().table_name"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Time_Computing",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "notebook_gold",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
+					"secureOutput": false,
 					"secureInput": false
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_incremental_watermark_generic",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
+					"variableName": "v_duration_seconds",
+					"value": "@div(sub(ticks(utcNow()), ticks(variables('v_start_time'))), 10000000)"
 				}
-			},
-			{
-				"name": "Lookup1",
-				"type": "Lookup",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": []
 			}
 		],
+		"variables": {
+			"v_start_time": {
+				"type": "String"
+			},
+			"v_duration_seconds": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
