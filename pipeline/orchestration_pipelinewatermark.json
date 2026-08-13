@@ -1,5 +1,5 @@
 {
-	"name": "pipeline2",
+	"name": "orchestration_pipelinewatermark",
 	"properties": {
 		"activities": [
 			{
