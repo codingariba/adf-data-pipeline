@@ -13,7 +13,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "v_start_time",
-					"value": "@utcNow()"
+					"value": {
+						"value": "@utcNow()",
+						"type": "Expression"
+					}
 				}
 			},
 			{
@@ -132,7 +135,10 @@
 								},
 								"waitOnCompletion": true,
 								"parameters": {
-									"p_table_name": "@item().table_name"
+									"p_table_name": {
+										"value": "@item().table_name",
+										"type": "Expression"
+									}
 								}
 							}
 						}
@@ -157,7 +163,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "v_duration_seconds",
-					"value": "@div(sub(ticks(utcNow()), ticks(variables('v_start_time'))), 10000000)"
+					"value": {
+						"value": "@div(sub(ticks(utcNow()), ticks(variables('v_start_time'))), 10000000)",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -166,7 +175,7 @@
 				"type": "String"
 			},
 			"v_duration_seconds": {
-				"type": "String"
+				"type": "Integer"
 			}
 		},
 		"annotations": []
