@@ -606,6 +606,55 @@
 							"referenceName": "AzureSynapseArtifacts1",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "notebook_GoldCdc",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "notebook_SilverCdc",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": {
+									"value": "nb_gold_generic",
+									"type": "Expression"
+								},
+								"type": "NotebookReference"
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": {
+									"value": "sparkdatalab",
+									"type": "Expression"
+								},
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": true,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureSynapseArtifacts1",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -814,8 +863,8 @@
 						}
 					},
 					{
-						"name": "ForEach_Silver",
-						"type": "ForEach",
+						"name": "notebook_silver",
+						"type": "SynapseNotebook",
 						"dependsOn": [
 							{
 								"activity": "notebook_bronze",
@@ -824,57 +873,128 @@
 								]
 							}
 						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
 						"userProperties": [],
 						"typeProperties": {
-							"items": {
-								"value": "@createArray('ventes', 'magasins', 'produits')",
-								"type": "Expression"
+							"notebook": {
+								"referenceName": {
+									"value": "nb_silver_generic",
+									"type": "Expression"
+								},
+								"type": "NotebookReference"
 							},
-							"isSequential": true,
-							"activities": [
-								{
-									"name": "notebook_silver",
-									"type": "SynapseNotebook",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
+							"parameters": {
+								"table_name": {
+									"value": {
+										"value": "@pipeline().parameters.p_table_name",
+										"type": "Expression"
 									},
-									"userProperties": [],
-									"typeProperties": {
-										"notebook": {
-											"referenceName": {
-												"value": "nb_silver_generic",
-												"type": "Expression"
-											},
-											"type": "NotebookReference"
-										},
-										"snapshot": true,
-										"sparkPool": {
-											"referenceName": {
-												"value": "sparkdatalab",
-												"type": "Expression"
-											},
-											"type": "BigDataPoolReference"
-										},
-										"executorSize": "Small",
-										"conf": {
-											"spark.dynamicAllocation.enabled": true,
-											"spark.dynamicAllocation.minExecutors": 1,
-											"spark.dynamicAllocation.maxExecutors": 2
-										},
-										"driverSize": "Small",
-										"numExecutors": 1
-									},
-									"linkedServiceName": {
-										"referenceName": "AzureSynapseArtifacts1",
-										"type": "LinkedServiceReference"
-									}
+									"type": "string"
 								}
-							]
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": {
+									"value": "sparkdatalab",
+									"type": "Expression"
+								},
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": true,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 2
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureSynapseArtifacts1",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_table_name": {
+						"type": "string",
+						"defaultValue": "ventes"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_sql_watermark')]",
+				"[concat(variables('factoryId'), '/datasets/ds_postgres_source')]",
+				"[concat(variables('factoryId'), '/datasets/ds_adls_raw')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSynapseArtifacts1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/orchestration_pipelinewatermark')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Start_Time",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_start_time",
+							"value": {
+								"value": "@utcNow()",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Start_Time",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT table_name, last_loaded_value, last_run_datetime FROM watermark_control",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_sql_watermark",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
 						}
 					},
 					{
@@ -882,7 +1002,7 @@
 						"type": "SynapseNotebook",
 						"dependsOn": [
 							{
-								"activity": "ForEach_Silver",
+								"activity": "Tables_Loop",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -925,25 +1045,93 @@
 							"referenceName": "AzureSynapseArtifacts1",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "Tables_Loop",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup1').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Execute_Pipeline",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"policy": {
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_incremental_watermark_generic",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"p_table_name": {
+												"value": "@item().table_name",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Time_Computing",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "notebook_gold",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_duration_seconds",
+							"value": {
+								"value": "@div(sub(ticks(utcNow()), ticks(variables('v_start_time'))), 10000000)",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
-				"parameters": {
-					"p_table_name": {
-						"type": "string",
-						"defaultValue": "ventes"
+				"variables": {
+					"v_start_time": {
+						"type": "String"
+					},
+					"v_duration_seconds": {
+						"type": "String"
 					}
 				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_sql_watermark')]",
-				"[concat(variables('factoryId'), '/datasets/ds_postgres_source')]",
-				"[concat(variables('factoryId'), '/datasets/ds_adls_raw')]",
-				"[concat(variables('factoryId'), '/linkedServices/ls_azuresql_datalab')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureSynapseArtifacts1')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureSynapseArtifacts1')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_incremental_watermark_generic')]"
 			]
 		}
 	]
