@@ -1,0 +1,25 @@
+{
+	"name": "trg_daily_refresh",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "orchestration_pipelinewatermark",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2026-08-18T15:17:00",
+				"endTime": "2026-08-20T15:17:00",
+				"timeZone": "Morocco Standard Time"
+			}
+		}
+	}
+}
