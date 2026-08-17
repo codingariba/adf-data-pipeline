@@ -16,7 +16,7 @@
 			"recurrence": {
 				"frequency": "Day",
 				"interval": 1,
-				"startTime": "2026-08-19T09:40:00",
+				"startTime": "2026-08-19T09:30:00",
 				"endTime": "2026-08-20T15:17:00",
 				"timeZone": "Morocco Standard Time"
 			}
